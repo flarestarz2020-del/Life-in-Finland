@@ -1982,11 +1982,10 @@ function initCalendar() {
   const unavailableDates = [];
 
   // Available time slots
-  const timeSlots = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-                     '13:00', '13:30', '14:00', '14:30', '15:00', '15:30'];
+  const timeSlots = ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00'];
 
   // Randomly mark some slots as unavailable for realism
-  const unavailableSlots = ['09:30', '13:30', '15:00'];
+  const unavailableSlots = ['13:00'];
 
   const monthNames = {
     en: ['January','February','March','April','May','June','July','August','September','October','November','December'],
@@ -2084,8 +2083,12 @@ function initCalendar() {
       const d = new Date(selectedDate + 'T00:00:00');
       const formatted = d.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
       selectedSlotDisplay.innerHTML = `📅 ${formatted} — select a time`;
+      selectedSlotDisplay.dataset.date = selectedDate;
+      selectedSlotDisplay.dataset.time = '';
     } else {
       selectedSlotDisplay.innerHTML = '📅 No date selected yet';
+      selectedSlotDisplay.dataset.date = '';
+      selectedSlotDisplay.dataset.time = '';
     }
   }
 
@@ -2193,20 +2196,35 @@ window.t = (key) => {
 
       const name      = document.getElementById('bookName').value.trim();
       const email     = document.getElementById('bookEmail').value.trim();
-      const situation = document.getElementById('bookSituation').value;
-      const topic     = document.getElementById('bookTopic').value;
+      const situationSelect = document.getElementById('bookSituation');
+      const topicSelect     = document.getElementById('bookTopic');
+      const queries         = document.getElementById('bookQueries').value.trim();
+      const situation       = situationSelect.options[situationSelect.selectedIndex].text;
+      const topic           = topicSelect.options[topicSelect.selectedIndex].text;
 
       console.log('Sending EmailJS to:', email, 'name:', name);
 
       // ── Step 1: EmailJS → confirmation email to the client ──
       try {
         const result = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+          name:         name,
           to_name:      name,
-          to_email:     email,
           session_date: dateVal,
           session_time: timeVal,
+          date:         dateVal,
+          time:         timeVal,
+          booking_date: dateVal,
+          booking_time: timeVal,
           topic:        topic,
+          session_topic: topic,
           situation:    situation,
+          user_situation: situation,
+          to_email:     email,
+          email:        email,
+          user_email:   email,
+          reply_to:     email,
+          queries:      queries,
+          message:      queries,
         });
         console.log('EmailJS success:', result);
       } catch (err) {
